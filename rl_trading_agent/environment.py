@@ -41,7 +41,7 @@ class TradingEnvironment:
     def step(self, action: int) -> tuple[State, float, bool, dict[str, float | int]]:
         action = Action(action)
         current_price = self.prices[self.index]
-        portfolio_before = self.cash + (self.position * current_price)
+        portfolio_before = self.portfolio_value(current_price)
 
         if action is Action.BUY and self.position == 0 and self.cash >= current_price:
             self.position = 1
@@ -52,7 +52,7 @@ class TradingEnvironment:
 
         self.index += 1
         next_price = self.prices[self.index]
-        portfolio_after = self.cash + (self.position * next_price)
+        portfolio_after = self.portfolio_value(next_price)
         reward = portfolio_after - portfolio_before
         done = self.index == len(self.prices) - 1
 
@@ -71,3 +71,7 @@ class TradingEnvironment:
             price_change = self.prices[self.index] - self.prices[self.index - 1]
             trend = 1 if price_change > 0 else -1 if price_change < 0 else 0
         return State(trend=trend, holding=self.position)
+
+    def portfolio_value(self, price: float | None = None) -> float:
+        current_price = self.prices[self.index] if price is None else price
+        return self.cash + (self.position * current_price)

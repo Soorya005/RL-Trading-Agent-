@@ -40,6 +40,11 @@ class QLearningTraderTest(unittest.TestCase):
         self.assertTrue(trader.q_table)
         self.assertIn("portfolio_value", summary)
         self.assertGreater(summary["portfolio_value"], STARTING_CASH)
+        upward_flat_state = State(trend=1, holding=0)
+        self.assertGreater(
+            trader.q_table[upward_flat_state][Action.BUY],
+            trader.q_table[upward_flat_state][Action.HOLD],
+        )
 
 
 if __name__ == "__main__":
