@@ -27,7 +27,7 @@ class QLearningTrader:
         for index, value in enumerate(values):
             if value == best_value:
                 return Action(index)
-        raise AssertionError("unreachable: best action must exist")
+        raise AssertionError("failed to find best action from Q-values")
 
     def learn(self, state: State, action: Action, reward: float, next_state: State, done: bool) -> None:
         values = self._values_for(state)

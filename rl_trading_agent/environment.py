@@ -43,10 +43,10 @@ class TradingEnvironment:
         current_price = self.prices[self.index]
         portfolio_before = self.portfolio_value(current_price)
 
-        if action is Action.BUY and self.position == 0 and self.cash >= current_price:
+        if action == Action.BUY and self.position == 0 and self.cash >= current_price:
             self.position = 1
             self.cash -= current_price
-        elif action is Action.SELL and self.position == 1:
+        elif action == Action.SELL and self.position == 1:
             self.position = 0
             self.cash += current_price
 
