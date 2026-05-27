@@ -5,6 +5,7 @@ A minimal reinforcement learning trading agent implemented in pure Python.
 ## Features
 
 - Single-asset trading environment with `hold`, `buy`, and `sell` actions
+- Long-only single-unit position management to keep the state/action space compact
 - Tabular Q-learning trader for training on price sequences
 - Lightweight `unittest` coverage for the core environment and training flow
 

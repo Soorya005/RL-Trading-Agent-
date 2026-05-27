@@ -18,7 +18,7 @@ class State:
 
 
 class TradingEnvironment:
-    """Single-asset trading environment with discrete actions and rewards."""
+    """Single-asset, single-unit, long-only trading environment."""
 
     def __init__(self, prices: Sequence[float], starting_cash: float = 1_000.0) -> None:
         if len(prices) < 2:

@@ -32,12 +32,12 @@ class TradingEnvironmentTest(unittest.TestCase):
 
 
 class QLearningTraderTest(unittest.TestCase):
-    def test_training_populates_q_table_and_returns_portfolio_summary(self) -> None:
-        trader, summary = train_trading_agent([10, 11, 12, 11, 13], episodes=25, seed=7)
+    def test_training_populates_q_table_and_learns_profitable_path(self) -> None:
+        trader, summary = train_trading_agent([10, 11, 12, 13, 14], episodes=25, seed=7)
 
         self.assertTrue(trader.q_table)
         self.assertIn("portfolio_value", summary)
-        self.assertGreater(summary["portfolio_value"], 0)
+        self.assertGreater(summary["portfolio_value"], 1_000.0)
 
 
 if __name__ == "__main__":

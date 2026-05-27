@@ -27,7 +27,6 @@ class QLearningTrader:
         for index, value in enumerate(values):
             if value == best_value:
                 return Action(index)
-        return Action.HOLD
 
     def learn(self, state: State, action: Action, reward: float, next_state: State, done: bool) -> None:
         values = self._values_for(state)
@@ -54,7 +53,7 @@ class QLearningTrader:
         info: dict[str, float | int] = {
             "cash": environment.cash,
             "position": environment.position,
-            "portfolio_value": environment.cash,
+            "portfolio_value": environment.cash + (environment.position * environment.prices[environment.index]),
             "price": environment.prices[environment.index],
         }
         while not done:
