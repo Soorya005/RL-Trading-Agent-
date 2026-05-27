@@ -3,6 +3,8 @@ import unittest
 from rl_trading_agent import Action, TradingEnvironment, train_trading_agent
 from rl_trading_agent.environment import State
 
+STARTING_CASH = 1_000.0
+
 
 class TradingEnvironmentTest(unittest.TestCase):
     def test_buy_then_hold_tracks_price_increase(self) -> None:
@@ -37,7 +39,7 @@ class QLearningTraderTest(unittest.TestCase):
 
         self.assertTrue(trader.q_table)
         self.assertIn("portfolio_value", summary)
-        self.assertGreater(summary["portfolio_value"], 1_000.0)
+        self.assertGreater(summary["portfolio_value"], STARTING_CASH)
 
 
 if __name__ == "__main__":

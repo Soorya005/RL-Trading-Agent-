@@ -27,6 +27,7 @@ class QLearningTrader:
         for index, value in enumerate(values):
             if value == best_value:
                 return Action(index)
+        raise RuntimeError("failed to select an action from the Q-table")
 
     def learn(self, state: State, action: Action, reward: float, next_state: State, done: bool) -> None:
         values = self._values_for(state)
