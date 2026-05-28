@@ -1,0 +1,19 @@
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+
+# Data and outputs
+data/raw/
+data/processed/
+models/
+evaluation/*.npy
+
+# Rust build artifacts
+rust_engine/target/
+
+# Python build artifacts
+*.egg-info/
+.eggs/
+build/
+dist/
