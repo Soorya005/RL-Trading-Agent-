@@ -10,8 +10,8 @@ paths:
 market:
   symbol: BTC-USD
   interval: 1d
-  start: 2018-01-01
-  end: 2024-12-31
+  start: "2018-01-01"
+  end: "2024-12-31"
 
 features:
   rsi_window: 14
@@ -22,7 +22,18 @@ training:
   algo: PPO
   timesteps: 200000
   train_split: 0.8
+  learning_rate: 0.0003
+  batch_size: 64
+  n_epochs: 10
+  gamma: 0.99
+  gae_lambda: 0.95
+  clip_range: 0.2
 
 reward:
   risk_penalty: 0.1
   transaction_cost: 0.0005
+
+evaluation:
+  eval_episodes: 1
+  render: false
+  save_trade_log: true

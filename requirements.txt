@@ -7,3 +7,6 @@ torch
 yfinance
 ta
 streamlit
+pyyaml
+pytest
+tensorboard

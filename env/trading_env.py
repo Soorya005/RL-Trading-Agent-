@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Tuple
+from dataclasses import dataclass, field
+from typing import Any, Tuple
 
 import gymnasium as gym
 import numpy as np
@@ -51,6 +51,7 @@ class TradingEnv(gym.Env):
         self.entry_price = 0.0
         self.net_worth = self.config.initial_cash
         self.peak_worth = self.config.initial_cash
+        self.trade_history: list[dict[str, Any]] = []
 
     def _get_features(self) -> np.ndarray:
         row = self.data.loc[self.step_index, self.feature_columns].astype(float)
@@ -79,6 +80,29 @@ class TradingEnv(gym.Env):
                 self.cash += price - fee
                 self.position -= 1.0
 
+    def _record_trade(self, action: int, price: float) -> None:
+        """Record a trade entry in the history log."""
+        action_name = {0: "hold", 1: "buy", 2: "sell"}.get(action, "unknown")
+        self.trade_history.append(
+            {
+                "step": self.step_index,
+                "action": action,
+                "action_name": action_name,
+                "price": price,
+                "cash": self.cash,
+                "position": self.position,
+                "net_worth": self.net_worth,
+            }
+        )
+
+    def get_trade_log(self) -> pd.DataFrame:
+        """Return the trade history as a DataFrame."""
+        if not self.trade_history:
+            return pd.DataFrame(
+                columns=["step", "action", "action_name", "price", "cash", "position", "net_worth"]
+            )
+        return pd.DataFrame(self.trade_history)
+
     def reset(self, *, seed: int | None = None, options: dict | None = None) -> Tuple[np.ndarray, dict]:
         super().reset(seed=seed)
         self._reset_state()
@@ -92,6 +116,9 @@ class TradingEnv(gym.Env):
         self._update_net_worth(price)
 
         reward = (self.net_worth - prev_worth) - self._risk_penalty()
+
+        # Record trade after action is applied
+        self._record_trade(action, price)
 
         self.step_index += 1
         terminated = self.step_index >= len(self.data) - 1

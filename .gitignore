@@ -8,6 +8,7 @@ data/raw/
 data/processed/
 models/
 evaluation/*.npy
+evaluation/*.csv
 
 # Rust build artifacts
 rust_engine/target/
@@ -17,3 +18,10 @@ rust_engine/target/
 .eggs/
 build/
 dist/
+
+# TensorBoard and logs
+runs/
+logs/
+
+# Scaler stats
+data/processed/scaler_stats.json

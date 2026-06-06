@@ -3,6 +3,7 @@ import sys
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 from stable_baselines3 import PPO
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -19,6 +20,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--data", type=str, default="data/processed/btc_1d_indicators.csv")
     parser.add_argument("--model", type=str, default="models/ppo_btc_1d.zip")
     parser.add_argument("--train_split", type=float, default=0.8)
+    parser.add_argument("--save_trade_log", action="store_true", help="Save trade log CSV.")
     return parser
 
 
@@ -56,14 +58,33 @@ def main() -> None:
         "max_drawdown": max_drawdown(equity_curve),
     }
 
-    print("Evaluation metrics:")
+    print("=" * 50)
+    print("Evaluation Metrics (Python Backtest)")
+    print("=" * 50)
     for key, value in metrics.items():
-        print(f"- {key}: {value:.4f}")
+        print(f"  {key:20s}: {value:.4f}")
+    print(f"  {'test_steps':20s}: {len(test_df)}")
+    print(f"  {'final_net_worth':20s}: {equity_curve[-1]:.2f}")
+    print("=" * 50)
 
     output_dir = Path("evaluation")
     output_dir.mkdir(parents=True, exist_ok=True)
     np.save(output_dir / "equity_curve.npy", equity_curve)
-    print("Saved equity curve to evaluation/equity_curve.npy")
+    print(f"Saved equity curve to {output_dir / 'equity_curve.npy'}")
+
+    # Save trade log if requested
+    if args.save_trade_log:
+        trade_log = env.get_trade_log()
+        if not trade_log.empty:
+            log_path = output_dir / "trade_log.csv"
+            trade_log.to_csv(log_path, index=False)
+            print(f"Saved trade log to {log_path} ({len(trade_log)} entries)")
+
+            # Print trade summary
+            buys = (trade_log["action"] == 1).sum()
+            sells = (trade_log["action"] == 2).sum()
+            holds = (trade_log["action"] == 0).sum()
+            print(f"\nTrade Summary: {buys} buys, {sells} sells, {holds} holds")
 
 
 if __name__ == "__main__":

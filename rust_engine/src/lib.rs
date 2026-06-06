@@ -99,7 +99,7 @@ fn backtest(
 
     let returns = compute_returns(&equity_curve);
     let metrics = PyDict::new(py);
-    metrics.set_item("equity_curve", equity_curve)?;
+    metrics.set_item("equity_curve", &equity_curve)?;
     metrics.set_item("total_return", total_return(&equity_curve))?;
     metrics.set_item("sharpe_ratio", sharpe_ratio(&returns))?;
     metrics.set_item("max_drawdown", max_drawdown(&equity_curve))?;
@@ -107,9 +107,74 @@ fn backtest(
     Ok(metrics.to_object(py))
 }
 
+/// Extended backtest that also returns per-step trade details.
+#[pyfunction]
+fn backtest_with_details(
+    py: Python,
+    prices: Vec<f64>,
+    actions: Vec<i64>,
+    initial_cash: f64,
+    transaction_cost: f64,
+) -> PyResult<PyObject> {
+    if prices.len() != actions.len() {
+        return Err(pyo3::exceptions::PyValueError::new_err(
+            "prices and actions must have the same length",
+        ));
+    }
+
+    let mut cash = initial_cash;
+    let mut position = 0.0_f64;
+    let mut equity_curve: Vec<f64> = Vec::with_capacity(prices.len());
+    let mut pnl_per_step: Vec<f64> = Vec::with_capacity(prices.len());
+    let mut executed_actions: Vec<i64> = Vec::with_capacity(prices.len());
+    let mut prev_worth = initial_cash;
+
+    for (price, action) in prices.iter().zip(actions.iter()) {
+        let fee = price * transaction_cost;
+        let mut executed = 0_i64;
+
+        match *action {
+            1 => {
+                if position < 1.0 && cash >= price + fee {
+                    cash -= price + fee;
+                    position += 1.0;
+                    executed = 1;
+                }
+            }
+            2 => {
+                if position > 0.0 {
+                    cash += price - fee;
+                    position -= 1.0;
+                    executed = 2;
+                }
+            }
+            _ => {}
+        }
+
+        let net_worth = cash + position * price;
+        let step_pnl = net_worth - prev_worth;
+        pnl_per_step.push(step_pnl);
+        prev_worth = net_worth;
+        equity_curve.push(net_worth);
+        executed_actions.push(executed);
+    }
+
+    let returns = compute_returns(&equity_curve);
+    let result = PyDict::new(py);
+    result.set_item("equity_curve", &equity_curve)?;
+    result.set_item("total_return", total_return(&equity_curve))?;
+    result.set_item("sharpe_ratio", sharpe_ratio(&returns))?;
+    result.set_item("max_drawdown", max_drawdown(&equity_curve))?;
+    result.set_item("pnl_per_step", &pnl_per_step)?;
+    result.set_item("executed_actions", &executed_actions)?;
+
+    Ok(result.to_object(py))
+}
+
 #[pymodule]
-fn rust_engine(_py: Python, m: &PyModule) -> PyResult<()> {
+fn rust_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(hello_engine, m)?)?;
     m.add_function(wrap_pyfunction!(backtest, m)?)?;
+    m.add_function(wrap_pyfunction!(backtest_with_details, m)?)?;
     Ok(())
 }
