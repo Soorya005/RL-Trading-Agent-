@@ -1,4 +1,5 @@
 # Risk-Aware Reinforcement Learning Trading System
+Only meant for research purposes not yet production grade 
 
 A research-oriented, modular RL trading simulator that pairs Python-based PPO training with a high-performance Rust backtesting engine.
 
